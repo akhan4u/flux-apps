@@ -4,8 +4,8 @@ metadata:
   name: daily-midnight
   namespace: velero
 spec:
-  # Take cluster backup every night at 1AM
-  schedule: 0 1 * * *
+  # Take cluster backup every night at 2AM (IST)
+  schedule: CRON_TZ=Asia/Kolkata 0 2 * * *
   skipImmediately: false
   template:
     csiSnapshotTimeout: 0s
