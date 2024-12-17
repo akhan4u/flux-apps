@@ -1,0 +1,18 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-midnight
+  namespace: velero
+spec:
+  # Take cluster backup every night at 2AM
+  schedule: 0 2 * * *
+  skipImmediately: false
+  template:
+    csiSnapshotTimeout: 0s
+    excludedNamespaces:
+    - kube-system
+    includedNamespaces:
+    - '*'
+    itemOperationTimeout: 0s
+    ttl: 0s
+  useOwnerReferencesInBackup: false
