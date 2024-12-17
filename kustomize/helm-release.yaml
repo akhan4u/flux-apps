@@ -27,6 +27,10 @@ spec:
       backupStorageLocation:
         - bucket: ${velero_backup_s3_bucket}
           provider: aws
+      volumeSnapshotLocation:
+        - config:
+          region: ${velero_snapshot_aws_region}
+          provider: aws
     initContainers:
       - name: velero-plugin-for-aws
         image: velero/velero-plugin-for-aws:v1.11.0
