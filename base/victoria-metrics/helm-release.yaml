@@ -24,7 +24,7 @@ spec:
   # Default values: https://github.com/VictoriaMetrics/helm-charts/blob/master/charts/victoria-metrics-k8s-stack/values.yaml
   values:
     global:
-      clusterLabel: ${vm-cluster-name}
+      clusterLabel: ${vm_cluster_name}
     # -- VictoriaMetrics Operator dependency chart configuration. More values can be found (https://docs.victoriametrics.com/helm/victoriametrics-operator#parameters). Also checkout (https://docs.victoriametrics.com/operator/vars) possible ENV variables to configure operator behaviour
     victoria-metrics-operator:
       enabled: true
