@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ../base/velero
   - ../base/victoria-metrics
+  - ../base/prometheus
