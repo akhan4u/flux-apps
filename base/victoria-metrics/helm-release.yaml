@@ -1,0 +1,117 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: victoria-metrics
+  namespace: victoria-metrics
+spec:
+  interval: 15m
+  timeout: 15m
+  chart:
+    spec:
+      chart: victoria-metrics
+      sourceRef:
+        kind: HelmRepository
+        name: victoria-metrics
+        namespace: victoria-metrics
+      interval: 5m
+  releaseName: victoria-metrics
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  # Default values: https://github.com/VictoriaMetrics/helm-charts/blob/master/charts/victoria-metrics-k8s-stack/values.yaml
+  values:
+    global:
+      clusterLabel: ${vm-cluster-name}
+    # -- VictoriaMetrics Operator dependency chart configuration. More values can be found (https://docs.victoriametrics.com/helm/victoriametrics-operator#parameters). Also checkout (https://docs.victoriametrics.com/operator/vars) possible ENV variables to configure operator behaviour
+    victoria-metrics-operator:
+      enabled: true
+      crds:
+        plain: true
+        cleanup:
+          enabled: true
+          image:
+            repository: bitnami/kubectl
+            pullPolicy: IfNotPresent
+      serviceMonitor:
+        enabled: true
+      operator:
+        # -- By default, operator converts prometheus-operator objects.
+        disable_prometheus_converter: false
+    defaultDashboards:
+      # -- Enable custom dashboards installation
+      enabled: true
+      defaultTimezone: utc
+      labels: {}
+      annotations: {}
+      grafanaOperator:
+        # -- Create dashboards as CRDs (requires grafana-operator to be installed)
+        enabled: false
+        spec:
+          instanceSelector:
+            matchLabels:
+              dashboards: grafana
+          allowCrossNamespaceImport: false
+      # -- Create dashboards as ConfigMap despite dependency it requires is not installed
+      dashboards:
+        victoriametrics-vmalert:
+          enabled: true
+        victoriametrics-operator:
+          enabled: true
+        # -- In ArgoCD using client-side apply this dashboard reaches annotations size limit and causes k8s issues without server side apply
+        # See [this issue](https://github.com/VictoriaMetrics/helm-charts/tree/disable-node-exporter-dashboard-by-default/charts/victoria-metrics-k8s-stack#metadataannotations-too-long-must-have-at-most-262144-bytes-on-dashboards)
+        node-exporter-full:
+          enabled: true
+    # -- Create default rules for monitoring the cluster
+    defaultRules:
+      create: true
+    # -- Rule group properties
+    groups:
+      etcd:
+        create: false
+      vmcluster:
+        create: false
+    # -- Create VMAlertmanager CR
+    alertmanager:
+      enabled: true
+      # -- Alertmanager annotations
+      annotations: {}
+      # -- (object) Full spec for VMAlertmanager CRD. Allowed values described (https://docs.victoriametrics.com/operator/api#vmalertmanagerspec)
+      spec:
+        replicaCount: 1
+        port: "9093"
+        selectAllByDefault: true
+        image:
+          tag: v0.27.0
+        externalURL: ""
+        routePrefix: /
+    # -- Grafana dependency chart configuration. For possible values refer (https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration)
+    grafana:
+      enabled: true
+      # all values for grafana helm chart can be specified here
+      sidecar:
+        datasources:
+          enabled: true
+          initDatasources: true
+          label: grafana_datasource
+        dashboards:
+          provider:
+            name: default
+            orgid: 1
+          folder: /var/lib/grafana/dashboards
+          defaultFolderName: default
+          enabled: true
+          multicluster: false
+    # -- Grafana VM scrape config
+    vmScrape:
+      # whether we should create a service scrape resource for grafana
+      enabled: true
+      # -- [Scrape configuration](https://docs.victoriametrics.com/operator/api#vmservicescrapespec) for Grafana
+      spec:
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: '{{ include "grafana.name" .Subcharts.grafana }}'
+        endpoints:
+          - port: '{{ .Values.grafana.service.portName }}'
