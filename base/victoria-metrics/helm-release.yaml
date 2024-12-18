@@ -44,8 +44,6 @@ spec:
       # -- Enable custom dashboards installation
       enabled: true
       defaultTimezone: utc
-      labels: {}
-      annotations: {}
       grafanaOperator:
         # -- Create dashboards as CRDs (requires grafana-operator to be installed)
         enabled: false
@@ -71,8 +69,27 @@ spec:
     groups:
       etcd:
         create: false
-      vmcluster:
-        create: false
+    vmcluster:
+      create: false
+    vmServiceScrape:
+      spec:
+        endpoints:
+          - port: http
+            honorLabels: true
+            metricRelabelConfigs:
+              - action: labeldrop
+                regex: (uid|container_id|image_id)
+          - port: metrics
+            honorLabels: true
+            metricRelabelConfigs:
+              - action: labeldrop
+                regex: (uid|container_id|image_id)
+        jobLabel: app.kubernetes.io/name
+    # kube-state-metrics
+    kube-state-metrics:
+      prometheusScrape: false
+      selfMonitor:
+        enabled: true
     # -- Create VMAlertmanager CR
     alertmanager:
       enabled: true
@@ -87,7 +104,7 @@ spec:
           tag: v0.27.0
         externalURL: ""
         routePrefix: /
-    # -- Grafana dependency chart configuration. For possible values refer (https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration)
+    # Grafana dependency chart configuration. For possible values (https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration)
     grafana:
       enabled: true
       # all values for grafana helm chart can be specified here
