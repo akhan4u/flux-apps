@@ -23,8 +23,9 @@ spec:
       retries: 3
   # Default values: https://github.com/vmware-tanzu/helm-charts/blob/velero-8.1.0/charts/velero/values.yaml
   values:
-    serviceMonitor:
-      enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
     configuration:
       backupStorageLocation:
         - bucket: ${velero_backup_s3_bucket}
