@@ -40,7 +40,7 @@ spec:
         volumeMounts:
           - mountPath: /target
             name: plugins
-    podSecurityContext:
+    containerSecurityContext:
       runAsNonRoot: true
       runAsUser: 65532
       runAsGroup: 65532
