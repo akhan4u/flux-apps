@@ -41,6 +41,11 @@ spec:
           - mountPath: /target
             name: plugins
     containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    podSecurityContext:
       runAsNonRoot: true
       runAsUser: 65532
       runAsGroup: 65532
