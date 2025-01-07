@@ -53,12 +53,6 @@ spec:
         drop:
           - ALL
 
-    containerSecurityContext:
-      allowPrivilegeEscalation: true
-      capabilities:
-        drop:
-          - ALL
-
     credentials:
       useSecret: true
       secretContents:
